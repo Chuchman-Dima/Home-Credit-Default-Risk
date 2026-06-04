@@ -1,13 +1,10 @@
-CREATE TABLE installments_payments (
-    SK_ID_PREV              INTEGER,
-    SK_ID_CURR              INTEGER,
-    NUM_STALMENT_VERSION    NUMERIC,
-    NUM_INSTALMENT_NUMBER   INTEGER,
-    DAYS_INSTALMENT         NUMERIC,
-    DAYS_ENTRY_PAYMENT      NUMERIC,
-    AMT_INSTALMENT          NUMERIC(15, 2),
-    AMT_PAYMENT             NUMERIC(15, 2)
+CREATE TABLE public.installments_payments (
+	sk_id_prev int4 NULL,
+	sk_id_curr int4 NULL,
+	num_stalment_version numeric NULL,
+	num_instalment_number int4 NULL,
+	days_instalment numeric NULL,
+	days_entry_payment numeric NULL,
+	amt_instalment numeric(15, 2) NULL,
+	amt_payment numeric(15, 2) NULL
 );
-
-COPY public.installments_payments FROM 'C:/Home Credit Default Risk/Home-Credit-Default-Risk/data/installments_payments.csv' 
-WITH (FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8');

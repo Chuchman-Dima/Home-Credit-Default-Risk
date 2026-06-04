@@ -1,8 +1,5 @@
-CREATE TABLE bureau_balance (
-    SK_ID_BUREAU    INTEGER,
-    MONTHS_BALANCE  INTEGER,
-    STATUS          VARCHAR(10)  
-);
-
-COPY public.bureau_balance FROM 'C:/Home Credit Default Risk/Home-Credit-Default-Risk/data/bureau_balance.csv' 
-WITH (FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8');
+CREATE TABLE public.bureau_balance (
+	sk_id_bureau int4 NULL,
+	months_balance int4 NULL,
+	status varchar(10) NULL
+); csv, HEADER true, DELIMITER ',', ENCODING 'UTF8');

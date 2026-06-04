@@ -1,21 +1,20 @@
-CREATE TABLE bureau (
-    SK_ID_CURR              INTEGER,
-    SK_ID_BUREAU            INTEGER PRIMARY KEY,
-    CREDIT_ACTIVE           VARCHAR(50),
-    CREDIT_CURRENCY         VARCHAR(50),
-    DAYS_CREDIT             INTEGER,
-    CREDIT_DAY_OVERDUE      INTEGER,
-    DAYS_CREDIT_ENDDATE     NUMERIC,
-    DAYS_ENDDATE_FACT       NUMERIC,
-    AMT_CREDIT_MAX_OVERDUE  NUMERIC(15, 2),
-    CNT_CREDIT_PROLONG      INTEGER,
-    AMT_CREDIT_SUM          NUMERIC(15, 2),
-    AMT_CREDIT_SUM_DEBT     NUMERIC(15, 2),
-    AMT_CREDIT_SUM_LIMIT    NUMERIC(15, 2),
-    AMT_CREDIT_SUM_OVERDUE  NUMERIC(15, 2),
-    CREDIT_TYPE             VARCHAR(100),
-    DAYS_CREDIT_UPDATE      INTEGER,
-    AMT_ANNUITY             NUMERIC(15, 2)
+CREATE TABLE public.bureau (
+	sk_id_curr int4 NULL,
+	sk_id_bureau int4 NOT NULL,
+	credit_active varchar(50) NULL,
+	credit_currency varchar(50) NULL,
+	days_credit int4 NULL,
+	credit_day_overdue int4 NULL,
+	days_credit_enddate numeric NULL,
+	days_enddate_fact numeric NULL,
+	amt_credit_max_overdue numeric(15, 2) NULL,
+	cnt_credit_prolong int4 NULL,
+	amt_credit_sum numeric(15, 2) NULL,
+	amt_credit_sum_debt numeric(15, 2) NULL,
+	amt_credit_sum_limit numeric(15, 2) NULL,
+	amt_credit_sum_overdue numeric(15, 2) NULL,
+	credit_type varchar(100) NULL,
+	days_credit_update int4 NULL,
+	amt_annuity numeric(15, 2) NULL,
+	CONSTRAINT bureau_pkey PRIMARY KEY (sk_id_bureau)
 );
-
-COPY public.bureau FROM 'C:/Home Credit Default Risk/Home-Credit-Default-Risk/data/bureau.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',', ENCODING 'UTF8');
