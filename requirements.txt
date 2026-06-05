@@ -1,6 +1,6 @@
 # Database
 sqlalchemy>=2.0
-psycopg2-binary>=2.9
+pg8000>=1.31
 python-dotenv>=1.0
 
 # Data processing
@@ -25,3 +25,6 @@ plotly>=5.20
 # Jupyter
 jupyter>=1.0
 ipykernel>=6.29
+
+# Deploy
+streamlit>=1.35
