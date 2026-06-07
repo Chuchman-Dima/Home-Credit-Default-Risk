@@ -6,6 +6,7 @@ python-dotenv>=1.0
 # Data processing
 pandas>=2.0
 numpy>=1.26
+pyarrow>=14.0
 
 # Machine Learning
 scikit-learn>=1.4

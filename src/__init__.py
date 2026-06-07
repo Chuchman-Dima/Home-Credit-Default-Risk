@@ -3,8 +3,10 @@ from .db import (
     test_connection,
     list_tables,
     load_table,
+    load_local,
     load_all_tables,
     get_table_info,
+    parquet_status,
 )
 
 __all__ = [
@@ -12,6 +14,8 @@ __all__ = [
     "test_connection",
     "list_tables",
     "load_table",
+    "load_local",
     "load_all_tables",
     "get_table_info",
+    "parquet_status",
 ]
