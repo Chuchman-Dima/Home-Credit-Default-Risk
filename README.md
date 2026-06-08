@@ -1,4 +1,5 @@
 # 🏦 Home Credit Default Risk
+**[Посилання на застосунок](https://home-credit-default-risk-my.streamlit.app/)**
 
 > Система кредитного скорингу на основі **LightGBM** з повним ML-циклом:
 > EDA → Feature Engineering → Training → Streamlit Deploy.
