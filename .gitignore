@@ -1,36 +1,41 @@
-# Environment variables (NEVER commit to git!)
+# Дані (великі файли — не зберігаємо в git)
+data/home-credit-default-risk/
+data/parquet/
+
+# Модель (великий бінарний файл)
+models/*.pkl
+models/feature_importance.csv
+models/model_metadata.json
+models/plots/
+
+# Налаштування (секрети)
 .env
 
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
+.Python
 *.egg-info/
 dist/
 build/
-.eggs/
-
-# Virtual environment
-.venv/
-venv/
-env/
 
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Models
-models/*.pkl
-models/*.joblib
-models/*.bin
-
-# Data (CSV files removed — using PostgreSQL)
-data/*.csv
-data/**/*.csv
+# Середовища
+.venv/
+venv/
+env/
+.virtualenv/
 
 # IDE
 .idea/
 .vscode/
-*.swp
+*.iml
 
-*.parquet
+# OS
+.DS_Store
+Thumbs.
