@@ -1,0 +1,37 @@
+# Великі дані — не копіюємо в образ (монтуються через volumes)
+data/
+models/
+
+# Git
+.git/
+.gitignore
+
+# Python кеш
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Середовища
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Секрети (монтуються як env_file)
+.env
+
+# Документація (не потрібна в контейнері)
+*.md
