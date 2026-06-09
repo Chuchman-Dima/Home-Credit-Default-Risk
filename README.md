@@ -67,7 +67,7 @@ Home-Credit-Default-Risk/
 │   └── train.py                    # CLI тренування
 │
 ├── streamlit_app/
-│   └── app.py                      # 🚀 4-сторінковий дашборд
+│   └── app.py                      # дашборд
 │
 ├── dump_to_parquet.py              # Одноразовий дамп PostgreSQL → parquet
 ├── init_db.py                      # Імпорт CSV → PostgreSQL
@@ -101,6 +101,7 @@ DB_PASSWORD=your_password
 # Покласти CSV файли в data/home-credit-default-risk/
 python init_db.py
 ```
+> Дані були взяти з Kaggle. [Посилання](https://www.kaggle.com/datasets/megancrenshaw/home-credit-default-risk) на дані.
 
 ### 4. Дамп PostgreSQL → parquet (один раз, ~5-15 хв)
 ```bash
@@ -186,10 +187,10 @@ PostgreSQL (7 таблиць, ~56M рядків)
 
 | Сторінка | Функціонал |
 |---------|-----------|
-| 🔮 **Скоринг клієнта** | Форма введення → ймовірність дефолту, кредитний скор 300–850 (gauge), рекомендації |
-| 📊 **Аналіз портфеля** | Завантаження CSV → пакетний скоринг → pie chart ризиків, гістограми |
-| 📈 **Метрики моделі** | ROC-AUC, PR-крива, confusion matrix, feature importance, SHAP plots |
-| ℹ️ **Про проєкт** | Документація, архітектура, метадані моделі |
+| **Скоринг клієнта** | Форма введення → ймовірність дефолту, кредитний скор 300–850 (gauge), рекомендації |
+| **Аналіз портфеля** | Завантаження CSV → пакетний скоринг → pie chart ризиків, гістограми |
+| **Метрики моделі** | ROC-AUC, PR-крива, confusion matrix, feature importance, SHAP plots |
+| **Про проєкт** | Документація, архітектура, метадані моделі |
 
 **Ключова логіка скорингу:**
 - Введені користувачем дані → `build_input_row()` → вирівнювання під список ознак моделі
