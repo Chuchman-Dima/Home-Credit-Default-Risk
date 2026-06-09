@@ -1,0 +1,39 @@
+# Дані (великі файли — не потрапляють в образ)
+data/home-credit-default-risk/
+data/parquet/
+
+# Моделі монтуються через volume, не копіюються в образ
+models/*.pkl
+models/feature_importance.csv
+models/model_metadata.json
+models/plots/
+
+# Jupyter
+notebooks/
+*.ipynb
+.ipynb_checkpoints/
+
+# Середовища
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Secrets
+.env
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
