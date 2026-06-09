@@ -128,6 +128,10 @@ streamlit run streamlit_app/app.py
 ```
 Відкриється: **http://localhost:8501**
 
+<img width="3549" height="1511" alt="image" src="https://github.com/user-attachments/assets/6d508038-7b6a-404f-b1e6-f16e7b616083" />
+<img width="3579" height="1766" alt="image" src="https://github.com/user-attachments/assets/239f5eb0-b3bc-4b28-ae12-bde67508bac3" />
+
+
 ---
 
 ## ML Pipeline
@@ -237,3 +241,12 @@ __pycache__/
 .venv/
 *.pyc
 ```
+
+-----
+
+# Автор
+**Чучман Дмитро**
+
+Студент КНУ ім. Тараса Шевченка (Механіко-математичний факультет)
+
+Сфера інтересів: Data Science, Machine Learning, Analytics.
