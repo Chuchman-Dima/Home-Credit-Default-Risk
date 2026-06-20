@@ -1,4 +1,4 @@
-# 🏦 Home Credit Default Risk
+# Home Credit Default Risk
 # **[Посилання на застосунок](https://home-credit-default-risk-my.streamlit.app/)**
 ---
 <img width="3539" height="1566" alt="image" src="https://github.com/user-attachments/assets/f7b6d39e-746c-4d95-849f-4b56789c0fb8" />
@@ -19,7 +19,7 @@
 
 ---
 
-## 📋 Зміст
+## Зміст
 - [Про проєкт](#про-проєкт)
 - [Структура](#структура)
 - [Швидкий старт через Docker](#-швидкий-старт-через-docker) ← **рекомендовано**
@@ -96,7 +96,7 @@ Home-Credit-Default-Risk/
 
 ---
 
-## 🐳 Швидкий старт через Docker
+## Швидкий старт через Docker
 
 ### Вимоги
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows / macOS) або Docker Engine + Compose (Linux)
@@ -126,7 +126,7 @@ chmod +x docker_setup.sh
 5. Робить дамп PostgreSQL → parquet
 6. Запускає Streamlit
 
-Відкрийте **http://localhost:8501** ✅
+Відкрийте **http://localhost:8501**
 
 ---
 
@@ -200,7 +200,7 @@ docker compose restart app
 # Зупинити все
 docker compose down
 
-# Зупинити та видалити дані БД (⚠️ незворотно)
+# Зупинити та видалити дані БД (незворотно)
 docker compose down -v
 
 # Зайти всередину контейнера
