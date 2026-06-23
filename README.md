@@ -1,9 +1,6 @@
 # Home Credit Default Risk
-# **[Посилання на застосунок](https://home-credit-default-risk-my.streamlit.app/)**
 ---
 <img width="3539" height="1566" alt="image" src="https://github.com/user-attachments/assets/f7b6d39e-746c-4d95-849f-4b56789c0fb8" />
-
-> ⚠️ Примітка: Застосунок працює на безкоштовному сервері. Якщо сторінка не завантажується миттєво, зачекайте 30-60 секунд (час на «прогрів» сервера) та оновіть її.
 
 ---
 
