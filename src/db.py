@@ -1,7 +1,7 @@
 """
 db.py - PostgreSQL connection + локальний кеш через parquet.
 
-  load_local(table)  → parquet з диску (~секунди) або fallback PostgreSQL
+  load_local(table)  → parquet з диску або fallback PostgreSQL
   load_table(table)  → завжди PostgreSQL
 """
 
@@ -16,15 +16,19 @@ _DB_NAME     = "data default"
 _DB_USER     = "postgres"
 _DB_PASSWORD = "1111"
 
-# Знайти корінь проєкту (папка де лежить src/)
-_SRC_DIR     = os.path.dirname(os.path.abspath(__file__))   # .../src
-_PROJECT_ROOT = os.path.dirname(_SRC_DIR)                    # корінь
+_SRC_DIR     = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.dirname(_SRC_DIR)
 
 _PARQUET_DIR = os.path.join(_PROJECT_ROOT, "data", "parquet")
 
 
-# ── PostgreSQL ─────────────────────────────────────────────────────────
 def get_engine():
+    """
+        Створює об'єкт SQLAlchemy Engine.
+        Пріоритет віддається змінним середовища (env variables). Якщо їх немає,
+        використовуються хардкод-значення за замовчуванням.
+    """
+
     host     = os.environ.get("DB_HOST",     _DB_HOST)
     port     = int(os.environ.get("DB_PORT", _DB_PORT))
     name     = os.environ.get("DB_NAME",     _DB_NAME)
@@ -40,6 +44,11 @@ def get_engine():
 
 
 def test_connection() -> bool:
+    """
+        Перевіряє з'єднання з базою даних, виконуючи найпростіший запит версії.
+        Повертає True, якщо з'єднання успішне.
+    """
+
     try:
         engine = get_engine()
         with engine.connect() as conn:
@@ -52,6 +61,10 @@ def test_connection() -> bool:
 
 
 def list_tables() -> list:
+    """
+        Повертає список усіх таблиць у публічній схемі бази даних PostgreSQL.
+    """
+
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(text(
@@ -65,9 +78,12 @@ def load_table(
     table_name: str,
     columns: list = None,
     limit: int = None,
-    chunksize: int = None,
-):
-    """Завжди читає з PostgreSQL (для dump / init)."""
+    chunksize: int = None,):
+    """
+        Зчитує дані безпосередньо з PostgreSQL.
+        Використовується переважно для створення локальних дампів або якщо Parquet відсутній.
+    """
+
     engine = get_engine()
     cols         = ", ".join(f'"{c}"' for c in columns) if columns else "*"
     limit_clause = f"LIMIT {limit}" if limit else ""
@@ -88,8 +104,9 @@ def load_local(
     parquet_dir: str = None,
 ) -> pd.DataFrame:
     """
-    Читає parquet з диску (швидко, ~секунди).
-    Якщо файл відсутній — fallback на PostgreSQL з підказкою.
+    Основна функція для роботи з даними.
+    Намагається зчитати дані з оптимізованого Parquet файлу (значно швидше за SQL).
+    Якщо файл відсутній, автоматично завантажує дані з PostgreSQL.
     """
     pdir = parquet_dir or _PARQUET_DIR
     path = os.path.join(pdir, f"{table_name}.parquet")
@@ -109,7 +126,10 @@ def load_local(
 
 
 def parquet_status() -> None:
-    """Виводить статус локального parquet кешу."""
+    """
+    Виводить інформацію про наявність та розмір локальних Parquet файлів.
+    Допомагає зрозуміти, чи всі дані були успішно закешовані.
+    """
     tables = [
         "application_train", "application_test",
         "bureau", "bureau_balance", "credit_card_balance",
@@ -130,6 +150,11 @@ def parquet_status() -> None:
 
 
 def load_all_tables(use_local: bool = True) -> dict:
+    """
+        Утиліта для одночасного завантаження всіх таблиць проєкту в пам'ять.
+        Повертає словник, де ключі — назви таблиць, а значення — датафрейми.
+    """
+
     tables = [
         "application_train", "application_test",
         "bureau", "bureau_balance", "credit_card_balance",
@@ -146,6 +171,11 @@ def load_all_tables(use_local: bool = True) -> dict:
 
 
 def get_table_info(table_name: str) -> pd.DataFrame:
+    """
+        Повертає метадані структури конкретної таблиці з PostgreSQL
+        (назви колонок, типи даних, чи допускає NULL значення).
+    """
+
     engine = get_engine()
     query = f"""
         SELECT column_name, data_type, is_nullable, character_maximum_length

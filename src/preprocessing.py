@@ -1,5 +1,7 @@
 """
-preprocessing.py - Data preprocessing pipeline for credit scoring.
+Модуль для попередньої обробки даних (Data Preprocessing).
+Створює пайплайн (Pipeline) для очищення, заповнення пропусків
+та кодування ознак перед подачею їх у модель машинного навчання.
 """
 
 import pandas as pd
@@ -9,8 +11,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.impute import SimpleImputer
 
-
-# Columns to drop (IDs, target, leakage)
+# Колонки, які не несуть користі
 DROP_COLS = [
     "sk_id_curr", "sk_id_bureau", "sk_id_prev",
     "index",
@@ -18,7 +19,10 @@ DROP_COLS = [
 
 
 def get_feature_types(df: pd.DataFrame, target: str = "target"):
-    """Split columns into numeric and categorical."""
+    """
+    Автоматично розділяє всі колонки датафрейму на числові та категоріальні
+    на основі їхнього типу даних (dtypes). Це необхідно для їхньої роздільної обробки.
+    """
     cols = [c for c in df.columns if c not in DROP_COLS + [target]]
     num_cols = df[cols].select_dtypes(include=["number"]).columns.tolist()
     cat_cols = df[cols].select_dtypes(include=["object", "category"]).columns.tolist()
@@ -26,7 +30,10 @@ def get_feature_types(df: pd.DataFrame, target: str = "target"):
 
 
 def build_preprocessor(num_cols: list, cat_cols: list) -> ColumnTransformer:
-    """Build sklearn ColumnTransformer for numeric + categorical features."""
+    """
+    Створює sklearn ColumnTransformer, який об'єднує два різних конвеєри (pipelines)
+    для обробки числових та категоріальних ознак.
+    """
 
     numeric_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
@@ -53,20 +60,14 @@ def build_preprocessor(num_cols: list, cat_cols: list) -> ColumnTransformer:
 
 def prepare_data(df: pd.DataFrame, target: str = "target"):
     """
-    Split DataFrame into X, y and build preprocessor.
-
-    Returns:
-        X_raw       - raw feature DataFrame
-        y           - target Series
-        num_cols    - list of numeric column names
-        cat_cols    - list of categorical column names
-        preprocessor- fitted-ready ColumnTransformer
+        Головна функція підготовки даних.
+        Очищає датасет, обробляє аномалії, розділяє його на X (ознаки) та y (ціль)
+        і генерує готовий до тренування об'єкт препроцесора.
     """
-    # Drop useless columns
+
     drop = [c for c in DROP_COLS if c in df.columns]
     df = df.drop(columns=drop)
 
-    # Replace XNA with NaN (Home Credit specific)
     df = df.replace("XNA", np.nan)
 
     y = df[target].astype(int)

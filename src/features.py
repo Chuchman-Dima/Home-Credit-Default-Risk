@@ -1,20 +1,20 @@
 """
-features.py - Feature engineering for Home Credit Default Risk.
-
-Joins all 7 tables on SK_ID_CURR and creates aggregated features.
-Читає з локального parquet кешу (швидко). Fallback на PostgreSQL.
+Модуль для генерації ознак (Feature Engineering).
+Містить функції для агрегації даних з різних таблиць історії кредитування
+на рівні кожного клієнта (sk_id_curr) та об'єднання їх у фінальний датасет.
 """
 
 import pandas as pd
 import numpy as np
 from src.db import load_local
 
-
-# ------------------------------------------------------------------ #
-#  Individual table feature builders                                  #
-# ------------------------------------------------------------------ #
-
 def build_bureau_features(bureau: pd.DataFrame) -> pd.DataFrame:
+
+    """
+        Генерує ознаки на основі кредитної історії клієнта з інших установ (bureau).
+        Обчислює кількість кредитів, середні суми, прострочення та співвідношення боргу.
+    """
+
     grp = bureau.groupby("sk_id_curr")
     agg = grp.agg(
         bureau_loan_count       =("sk_id_bureau",           "count"),
@@ -28,6 +28,7 @@ def build_bureau_features(bureau: pd.DataFrame) -> pd.DataFrame:
         bureau_max_overdue      =("credit_day_overdue",     "max"),
         bureau_sum_overdue      =("credit_day_overdue",     "sum"),
     ).reset_index()
+    # Розрахунок частки боргу від загальної суми кредитів (+1 для уникнення ділення на 0)
     agg["bureau_debt_ratio"] = agg["bureau_total_debt"] / (agg["bureau_total_credit"] + 1)
     return agg
 
@@ -36,6 +37,12 @@ def build_bureau_balance_features(
     bureau: pd.DataFrame,
     bureau_balance: pd.DataFrame,
 ) -> pd.DataFrame:
+
+    """
+        Генерує ознаки щомісячних балансів кредитів з інших установ.
+        Оскільки таблиця bureau_balance не містить sk_id_curr, спочатку виконується join з bureau.
+    """
+
     bb = bureau_balance.merge(
         bureau[["sk_id_bureau", "sk_id_curr"]], on="sk_id_bureau", how="left"
     )
@@ -50,6 +57,12 @@ def build_bureau_balance_features(
 
 
 def build_prev_app_features(prev: pd.DataFrame) -> pd.DataFrame:
+
+    """
+    Генерує ознаки на основі історії попередніх заявок клієнта в поточній установі.
+    Обчислює статистику по сумах, рішеннях та відсоток схвалень.
+    """
+
     grp = prev.groupby("sk_id_curr")
     agg = grp.agg(
         prev_app_count          =("sk_id_prev",           "count"),
@@ -68,6 +81,9 @@ def build_prev_app_features(prev: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_pos_cash_features(pos: pd.DataFrame) -> pd.DataFrame:
+    """
+    Генерує ознаки на основі історії залишків за споживчими та готівковими кредитами.
+    """
     grp = pos.groupby("sk_id_curr")
     agg = grp.agg(
         pos_months_count  =("months_balance",       "count"),
@@ -83,6 +99,9 @@ def build_pos_cash_features(pos: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_installments_features(inst: pd.DataFrame) -> pd.DataFrame:
+    """
+    Генерує ознаки на основі історії платежів (наскільки вчасно і повно клієнт платив).
+    """
     inst = inst.copy()
     inst["payment_diff"] = inst["amt_instalment"] - inst["amt_payment"]
     inst["days_late"]    = (inst["days_entry_payment"] - inst["days_instalment"]).clip(lower=0)
@@ -103,6 +122,9 @@ def build_installments_features(inst: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_credit_card_features(cc: pd.DataFrame) -> pd.DataFrame:
+    """
+    Генерує ознаки на основі історії використання кредитних карток.
+    """
     grp = cc.groupby("sk_id_curr")
     agg = grp.agg(
         cc_months_count     =("months_balance",           "count"),
@@ -119,22 +141,13 @@ def build_credit_card_features(cc: pd.DataFrame) -> pd.DataFrame:
     return agg
 
 
-# ------------------------------------------------------------------ #
-#  Main builder                                                        #
-# ------------------------------------------------------------------ #
-
 def build_features(app: pd.DataFrame = None, use_local: bool = True) -> pd.DataFrame:
     """
-    Build full feature matrix by joining all 7 tables.
-
-    Args:
-        app:       application_train DataFrame (завантажується якщо None)
-        use_local: True  → читати з parquet (швидко, ~5-15с)
-                   False → читати з PostgreSQL (повільно, ~3-10хв)
-
-    Returns:
-        DataFrame з усіма ознаками, колонка TARGET збережена
+        Основна функція пайплайну.
+        Завантажує всі таблиці, викликає функції агрегації та об'єднує (LEFT JOIN)
+        згенеровані ознаки з основною таблицею заявок (application_train).
     """
+
     loader = load_local if use_local else __import__("src.db", fromlist=["load_table"]).load_table
 
     print("Завантаження таблиць...")

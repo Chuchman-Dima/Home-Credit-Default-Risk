@@ -4,18 +4,17 @@ dump_to_parquet.py — Одноразовий дамп PostgreSQL → локал
 Запускається ОДИН РАЗ з кореня проєкту:
     python dump_to_parquet.py
 
-Після цього всі ноутбуки читають з диску (~секунди замість хвилин).
+Після цього всі ноутбуки читають з диску
 """
 
 import os
 import sys
 import time
 
-# ── Знайти корінь проєкту (папка де лежить цей файл) ──────────────────
+# Знайти корінь проєкту
 THIS_FILE   = os.path.abspath(__file__)
-PROJECT_ROOT = os.path.dirname(THIS_FILE)          # корінь проєкту
+PROJECT_ROOT = os.path.dirname(THIS_FILE)
 
-# Якщо скрипт запущений з src/ — крок вгору
 if os.path.basename(PROJECT_ROOT) == "src":
     PROJECT_ROOT = os.path.dirname(PROJECT_ROOT)
 
@@ -23,7 +22,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 from src.db import load_table
 
-# ── Папка для збереження ───────────────────────────────────────────────
+# Папка для збереження
 DATA_DIR = os.path.join(PROJECT_ROOT, "data", "parquet")
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -69,9 +68,8 @@ def main():
     print(f"  Parquet папка  : {DATA_DIR}")
     print()
 
-    # Перевірити pyarrow
     try:
-        import pyarrow  # noqa: F401
+        import pyarrow
     except ImportError:
         print("pyarrow не встановлено!")
         print("   Виконайте: pip install pyarrow")

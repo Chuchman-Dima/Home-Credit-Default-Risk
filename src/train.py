@@ -1,7 +1,10 @@
 """
-train.py — Тренування LightGBM моделі.
-Run: python -m src.train
+Скрипт для тренування моделі машинного навчання (LightGBM).
+Виконує крос-валідацію, пошук оптимального порогу класифікації
+та збереження всіх артефактів моделі (ваги, метадані, важливість ознак)
+для подальшого використання у вебзастосунку.
 """
+
 
 import os, sys, json, joblib
 import numpy as np
@@ -24,6 +27,11 @@ os.makedirs(os.path.join(MODELS_DIR, "plots"), exist_ok=True)
 
 
 def build_pipeline(preprocessor) -> Pipeline:
+    """
+        Створює scikit-learn пайплайн, що об'єднує попередню обробку даних
+        та класифікатор LightGBM із заданими гіперпараметрами.
+    """
+
     model = lgb.LGBMClassifier(
         n_estimators      = 1000,
         learning_rate     = 0.05,
@@ -43,6 +51,12 @@ def build_pipeline(preprocessor) -> Pipeline:
 
 
 def train_model(X, y, preprocessor):
+    """
+        Оцінює якість моделі за допомогою 5-fold крос-валідації,
+        обчислює метрики на відкладеній вибірці та знаходить оптимальний
+        поріг (threshold) ймовірності дефолту.
+    """
+
     pipeline = build_pipeline(preprocessor)
 
     print("\nRunning 5-fold CV...")
@@ -51,7 +65,6 @@ def train_model(X, y, preprocessor):
     print(f"  per fold : {[f'{s:.4f}' for s in scores]}")
     print(f"  mean±std : {scores.mean():.4f} ± {scores.std():.4f}")
 
-    # Тест-сет для метрик та оптимального порогу
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2,
                                                stratify=y, random_state=42)
     pipeline.fit(X_tr, y_tr)
@@ -62,15 +75,12 @@ def train_model(X, y, preprocessor):
     print(f"  test AUC : {test_auc:.4f}")
     print(f"  test AP  : {test_ap:.4f}")
 
-    # Оптимальний поріг (max F1)
     from sklearn.metrics import f1_score
     thresholds = np.arange(0.05, 0.90, 0.01)
     f1s        = [f1_score(y_te, (y_prob >= t).astype(int), zero_division=0) for t in thresholds]
     opt_thr    = float(thresholds[np.argmax(f1s)])
-    print(f"  opt thr  : {opt_thr:.2f} (max F1={max(f1s):.4f})")
+    print(f"opt thr  : {opt_thr:.2f} (max F1={max(f1s):.4f})")
 
-    # Фінальна модель на всіх даних
-    print("\nFitting final model on full data...")
     pipeline_final = build_pipeline(preprocessor)
     pipeline_final.fit(X, y)
 
@@ -78,14 +88,17 @@ def train_model(X, y, preprocessor):
 
 
 def save_model(pipeline, scores, test_auc, test_ap, opt_thr):
-    # Model
+    """
+        Зберігає натреновану модель, таблицю важливості ознак та метадані
+        (метрики, пороги, імена колонок), які необхідні для роботи Streamlit-застосунку.
+    """
+
     model_path = os.path.join(MODELS_DIR, "credit_scoring_lgbm.pkl")
     joblib.dump(pipeline, model_path)
     print(f"\nМодель: {model_path}")
 
-    # Feature importance
-    prep          = pipeline.named_steps["preprocessor"]
-    lgbm          = pipeline.named_steps["model"]
+    prep = pipeline.named_steps["preprocessor"]
+    lgbm = pipeline.named_steps["model"]
     feature_names = list(prep.get_feature_names_out())
 
     imp_df = pd.DataFrame({
@@ -95,7 +108,6 @@ def save_model(pipeline, scores, test_auc, test_ap, opt_thr):
     imp_df.to_csv(os.path.join(MODELS_DIR, "feature_importance.csv"), index=False)
     print(f"Feature importance: {len(feature_names)} ознак")
 
-    # Metadata  ← feature_names зберігаємо для Streamlit predict_single
     meta = {
         "model_type":        "LightGBMClassifier",
         "cv_auc_mean":       float(scores.mean()),
@@ -117,6 +129,11 @@ def save_model(pipeline, scores, test_auc, test_ap, opt_thr):
 
 
 def main():
+    """
+        Головна функція оркестрації. Викликає по черзі генерацію ознак,
+        попередню обробку та тренування.
+    """
+
     print("=" * 55)
     print("  Home Credit — Тренування моделі")
     print("=" * 55)
