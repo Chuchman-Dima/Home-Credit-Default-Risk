@@ -81,7 +81,7 @@ def save_model(pipeline, scores, test_auc, test_ap, opt_thr):
     # Model
     model_path = os.path.join(MODELS_DIR, "credit_scoring_lgbm.pkl")
     joblib.dump(pipeline, model_path)
-    print(f"\n✅ Модель: {model_path}")
+    print(f"\nМодель: {model_path}")
 
     # Feature importance
     prep          = pipeline.named_steps["preprocessor"]
@@ -93,7 +93,7 @@ def save_model(pipeline, scores, test_auc, test_ap, opt_thr):
         "importance": lgbm.feature_importances_,
     }).sort_values("importance", ascending=False)
     imp_df.to_csv(os.path.join(MODELS_DIR, "feature_importance.csv"), index=False)
-    print(f"✅ Feature importance: {len(feature_names)} ознак")
+    print(f"Feature importance: {len(feature_names)} ознак")
 
     # Metadata  ← feature_names зберігаємо для Streamlit predict_single
     meta = {
@@ -109,7 +109,7 @@ def save_model(pipeline, scores, test_auc, test_ap, opt_thr):
     }
     with open(os.path.join(MODELS_DIR, "model_metadata.json"), "w") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
-    print(f"✅ Metadata: {MODELS_DIR}/model_metadata.json")
+    print(f"Metadata: {MODELS_DIR}/model_metadata.json")
 
     print(f"\nТоп-15 ознак:")
     print(imp_df.head(15).to_string(index=False))
@@ -133,7 +133,7 @@ def main():
     pipeline, scores, test_auc, test_ap, opt_thr = train_model(X, y, preprocessor)
     save_model(pipeline, scores, test_auc, test_ap, opt_thr)
 
-    print("\n✅ Готово! Запустіть: streamlit run streamlit_app/app.py")
+    print("\nГотово! Запустіть: streamlit run streamlit_app/app.py")
 
 
 if __name__ == "__main__":

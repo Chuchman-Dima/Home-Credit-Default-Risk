@@ -51,4 +51,4 @@ if ($csvCount -gt 0) {
 step "Крок 4/4 — Запуск Streamlit..."
 docker compose up -d app
 
-info "✅ Готово! Відкрийте: http://localhost:8501"
+info "Готово! Відкрийте: http://localhost:8501"

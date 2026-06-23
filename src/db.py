@@ -44,10 +44,10 @@ def test_connection() -> bool:
         engine = get_engine()
         with engine.connect() as conn:
             version = conn.execute(text("SELECT version()")).fetchone()[0]
-        print(f"✅ PostgreSQL OK: {version[:60]}")
+        print(f"PostgreSQL OK: {version[:60]}")
         return True
     except Exception as e:
-        print(f"❌ З'єднання не вдалось: {e}")
+        print(f"З'єднання не вдалось: {e}")
         return False
 
 
@@ -96,11 +96,11 @@ def load_local(
 
     if os.path.exists(path):
         df = pd.read_parquet(path, columns=columns)
-        print(f"✅ '{table_name}' з parquet: {df.shape[0]:,} рядків, {df.shape[1]} колонок")
+        print(f"'{table_name}' з parquet: {df.shape[0]:,} рядків, {df.shape[1]} колонок")
         return df
 
     # fallback
-    print(f"⚠️  Parquet '{table_name}' не знайдено ({path})")
+    print(f"Parquet '{table_name}' не знайдено ({path})")
     print(f"   → Запустіть: python dump_to_parquet.py")
     print(f"   → Поки що читаємо з PostgreSQL...")
     df = load_table(table_name, columns=columns)
@@ -123,9 +123,9 @@ def parquet_status() -> None:
         if os.path.exists(path):
             size = os.path.getsize(path) / 1024 / 1024
             total += size
-            print(f"  ✅ {t:<35} {size:>6.1f} MB")
+            print(f"{t:<35} {size:>6.1f} MB")
         else:
-            print(f"  ❌ {t:<35}  немає  ← запустіть dump_to_parquet.py")
+            print(f"{t:<35}  немає  ← запустіть dump_to_parquet.py")
     print(f"  {'ВСЬОГО':<35} {total:>6.1f} MB\n")
 
 

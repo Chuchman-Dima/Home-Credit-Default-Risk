@@ -44,10 +44,10 @@ def dump_table(table_name: str) -> None:
 
     if os.path.exists(parquet_path):
         size_mb = os.path.getsize(parquet_path) / 1024 / 1024
-        print(f"  ✅ {table_name:<35} вже є ({size_mb:.1f} MB) — пропускаємо")
+        print(f"{table_name:<35} вже є ({size_mb:.1f} MB) — пропускаємо")
         return
 
-    print(f"  ⬇️  {table_name:<35} завантаження...", end=" ", flush=True)
+    print(f"{table_name:<35} завантаження...", end=" ", flush=True)
     t0 = time.time()
 
     df = load_table(table_name)
@@ -58,7 +58,7 @@ def dump_table(table_name: str) -> None:
     elapsed = time.time() - t0
     size_mb = os.path.getsize(parquet_path) / 1024 / 1024
     rows = df.shape[0]
-    print(f"  ✅ {rows:>9,} рядків  {size_mb:>6.1f} MB  {elapsed:>4.0f}с")
+    print(f"{rows:>9,} рядків  {size_mb:>6.1f} MB  {elapsed:>4.0f}с")
 
 
 def main():
@@ -73,7 +73,7 @@ def main():
     try:
         import pyarrow  # noqa: F401
     except ImportError:
-        print("❌ pyarrow не встановлено!")
+        print("pyarrow не встановлено!")
         print("   Виконайте: pip install pyarrow")
         sys.exit(1)
 
@@ -85,7 +85,7 @@ def main():
             dump_table(table)
             success.append(table)
         except Exception as e:
-            print(f"  ❌ ПОМИЛКА '{table}': {e}")
+            print(f"ПОМИЛКА '{table}': {e}")
             failed.append((table, str(e)))
 
     elapsed = time.time() - total_start
@@ -108,11 +108,9 @@ def main():
     if failed:
         print("\nПомилки:")
         for t, e in failed:
-            print(f"  ❌ {t}: {e}")
+            print(f"{t}: {e}")
     else:
-        print("\n✅ Готово! Тепер notebooks читають дані з диску через load_local().")
-        print(f"   Наступні запуски EDA/model.ipynb будуть ~10× швидше.")
-
+        print("\nГотово! Тепер notebooks читають дані з диску через load_local().")
 
 if __name__ == "__main__":
     main()

@@ -137,7 +137,7 @@ def build_features(app: pd.DataFrame = None, use_local: bool = True) -> pd.DataF
     """
     loader = load_local if use_local else __import__("src.db", fromlist=["load_table"]).load_table
 
-    print("📂 Завантаження таблиць...")
+    print("Завантаження таблиць...")
 
     if app is None:
         app = loader("application_train")
@@ -153,7 +153,7 @@ def build_features(app: pd.DataFrame = None, use_local: bool = True) -> pd.DataF
     for df in [bureau, bureau_bal, prev_app, pos_cash, installments, credit_card]:
         df.columns = [c.lower() for c in df.columns]
 
-    print("\n🔧 Побудова ознак...")
+    print("\nПобудова ознак...")
 
     feat_bureau = build_bureau_features(bureau)
     feat_bb     = build_bureau_balance_features(bureau, bureau_bal)
@@ -174,7 +174,7 @@ def build_features(app: pd.DataFrame = None, use_local: bool = True) -> pd.DataF
         result = result.merge(feat_df, on="sk_id_curr", how="left")
         print(f"  + {name:<25} {feat_df.shape[1]-1} ознак")
 
-    print(f"\n✅ Матриця ознак: {result.shape[0]:,} рядків × {result.shape[1]} колонок")
+    print(f"\nМатриця ознак: {result.shape[0]:,} рядків × {result.shape[1]} колонок")
     return result
 
 
