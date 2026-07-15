@@ -1,373 +1,153 @@
-# Home Credit Default Risk
----
-<img width="3539" height="1566" alt="image" src="https://github.com/user-attachments/assets/f7b6d39e-746c-4d95-849f-4b56789c0fb8" />
+# Car Price Predictor AUTO.RIA
+
+**Цей проєкт — це повноцінний сервіс для оцінки ринкової вартості вживаних автомобілів.**
+
+### Спробувати застосунок
+*  **[Основне посилання (Hugging Face Spaces)](https://huggingface.co/spaces/Dmytro-Chuchman/MarketScout)** — *Рекомендовано. Працює швидко та стабільно (24/7).*
+*  **[Резервне посилання (Render / Streamlit)](https://car-price-predictor-autoria-as5etqdr7uhjyugcgbcxmy.streamlit.app/)** — *Альтернативний безкоштовний сервер.* 
+> ⚠️ *Примітка для резервного посилання: Якщо сторінка не завантажується миттєво, зачекайте 60-120 секунд (час на «прогрів» сервера) та оновіть її.*
 
 ---
 
-> Система кредитного скорингу на основі **LightGBM** з повним ML-циклом:
-> EDA → Feature Engineering → Training → Streamlit Deploy.
+## Основні можливості
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://python.org)
-[![LightGBM](https://img.shields.io/badge/LightGBM-4.3-orange)](https://lightgbm.readthedocs.io)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.35-red?logo=streamlit)](https://streamlit.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)](https://postgresql.org)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
-[![ROC-AUC](https://img.shields.io/badge/ROC--AUC-0.76%2B-green)](/)
-
----
-
-## Зміст
-- [Про проєкт](#про-проєкт)
-- [Структура](#структура)
-- [Швидкий старт через Docker](#-швидкий-старт-через-docker) ← **рекомендовано**
-- [Локальний запуск без Docker](#локальний-запуск-без-docker)
-- [ML Pipeline](#ml-pipeline)
-- [Streamlit Dashboard](#streamlit-dashboard)
-- [Результати](#результати)
+* **Оцінка ринкової вартості та діапазону цін:** ML-модель (CatBoost) розраховує не лише точну "справедливу" ціну, а й відображає актуальний діапазон ринкових пропозицій (від мінімальної до максимальної). Реалізовано миттєву конвертацію результатів у USD, UAH та EUR.
+* **Інтерпретація прогнозів (XAI):** Проєкт містить блок "Як ШІ розрахував ціну", що дозволяє користувачу побачити ступінь впливу кожної характеристики (рік випуску, пробіг, об'єм двигуна тощо) на фінальний результат. Це робить модель "прозорою" для користувача.
+* **Детектор перекупів:** Можливість ввести ціну з конкретного оголошення, щоб перевірити її адекватність відносно ринкового прогнозу.
+* **Вартість володіння:** Інтерактивний калькулятор витрат на пальне, який базується на технічних даних авто та орієнтовному річному пробігу користувача.
+* **Прогнозування знецінення:** Симуляція падіння вартості автомобіля на найближчі 5 років. Система враховує природне старіння моделі та майбутній приріст пробігу, допомагаючи оцінити ліквідність активу в довгостроковій перспективі.
+* **Візуалізація трендів та порівняння:** Інтерактивні графіки знецінення для наочного аналізу. Додана функція порівняння авто, що дозволяє зберігати та зіставляти декілька варіантів для прийняття найкращого рішення про покупку.
 
 ---
 
-## Про проєкт
+## Структура проєкту:
 
-**Задача:** передбачити чи допустить клієнт дефолт за кредитом (бінарна класифікація).
-
-**Дані:** [Home Credit Default Risk](https://www.kaggle.com/competitions/home-credit-default-risk) — 7 взаємопов'язаних таблиць у PostgreSQL:
-
-| Таблиця | Рядків | Опис |
-|---------|-------:|------|
-| `application_train` | 307 511 | Основні заявки на кредит |
-| `bureau` | 1 716 428 | Кредитна історія з ЦБ |
-| `bureau_balance` | 27 299 925 | Місячні баланси кредитів бюро |
-| `previous_application` | 1 670 214 | Попередні заявки в Home Credit |
-| `pos_cash_balance` | 10 001 358 | POS кредити та готівкові займи |
-| `installments_payments` | 13 605 401 | Платіжна дисципліна |
-| `credit_card_balance` | 3 840 312 | Баланси кредитних карток |
-
----
-
-## Структура
-
-```
-Home-Credit-Default-Risk/
-│
-├── data/
-│   ├── home-credit-default-risk/   # CSV файли (не в git, ~3.5 GB)
-│   └── parquet/                    # Локальний кеш (після dump)
-│
-├── docker/
-│   ├── initdb/                     # SQL-скрипти для першої ініціалізації БД
-│   └── streamlit_config.toml       # Конфіг Streamlit всередині контейнера
-│
-├── models/
-│   ├── credit_scoring_lgbm.pkl     # Натренована модель
-│   ├── feature_importance.csv      # Важливість ознак
-│   ├── model_metadata.json         # Метрики + список ознак
-│   └── plots/                      # Графіки (CV, ROC, SHAP...)
-│
-├── notebooks/
-│   ├── EDA.ipynb                   # Розвідувальний аналіз (10 розділів)
-│   └── model.ipynb                 # Тренування + SHAP (8 кроків)
-│
+```text
+├──data/
+│   ├── cars_dataset.csv        # Повний набір даних (не додається до репозиторію)
+│   ├── cars_dataset_sample.csv # Приклад даних для демонстрації
+│   └── README.md               # Опис набору даних
+├── notebooks/                  # EDA, обробка даних та тренування моделі
 ├── src/
-│   ├── __init__.py
-│   ├── db.py                       # PostgreSQL + parquet кеш
-│   ├── features.py                 # Feature engineering (7 таблиць → ~80 ознак)
-│   ├── preprocessing.py            # sklearn Pipeline
-│   └── train.py                    # CLI тренування
-│
-├── streamlit_app/
-│   └── app.py                      # Дашборд
-│
-├── Dockerfile                      # Docker образ застосунку
-├── docker-compose.yml              # Оркестрація app + PostgreSQL
-├── .dockerignore
-├── .env.example                    # Шаблон змінних середовища
-├── docker_setup.sh                 # Скрипт першого запуску (Linux/macOS)
-├── docker_setup.ps1                # Скрипт першого запуску (Windows)
-├── dump_to_parquet.py              # Одноразовий дамп PostgreSQL → parquet
-├── init_db.py                      # Імпорт CSV → PostgreSQL
-├── check_connection.py             # Тест підключення
-├── requirements.txt
-└── .env                            # DB credentials (не в git)
-```
+│   ├── backend/                # FastAPI сервіс
+│   │   ├── models/             # ML модель (.cbm) та серіалізовані категорії (.pkl)
+│   │   ├── main.py             # Точка входу API
+│   │   └── Dockerfile          # Образ для бекенду
+│   └── frontend/               # Streamlit додаток
+│       ├── app.py              # Логіка інтерфейсу та запити до API
+│       └── Dockerfile          # Образ для фронтенду
+├── docker-compose.yml          # Координація роботи сервісів
+├── .gitignore                  # Виключення конфіденційних даних (.env, .csv)
+├── README.md                   # Опис проєкту
+└── requirements.txt            # Залежності проєкту
+````
 
----
+-----
 
-## Швидкий старт через Docker
+## 🛠️ Технологічний стек
 
-### Вимоги
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows / macOS) або Docker Engine + Compose (Linux)
-- CSV файли з Kaggle у папці `data/home-credit-default-risk/` ([посилання](https://www.kaggle.com/datasets/megancrenshaw/home-credit-default-risk))
-- Натренована модель у папці `models/` (або перетренувати — крок 5 нижче)
+**Мова програмування:** ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 
----
+**Data Science & Machine Learning:** ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?style=flat&logo=numpy&logoColor=white)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-F7931E?style=flat&logo=scikit-learn&logoColor=white)
+![CatBoost](https://img.shields.io/badge/CatBoost-FFCC00?style=flat&logo=catboost&logoColor=black)
 
-### Варіант А — Автоматичний скрипт (рекомендовано)
+**Backend & API:** ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
 
-**Linux / macOS:**
-```bash
-chmod +x docker_setup.sh
-./docker_setup.sh
-```
+**Frontend:** ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 
-**Windows (PowerShell):**
-```powershell
-.\docker_setup.ps1
-```
+**DevOps & Tools:** ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 
-Скрипт автоматично:
-1. Створює `.env` з шаблону
-2. Збирає Docker образ
-3. Запускає PostgreSQL
-4. Імпортує CSV → PostgreSQL (якщо файли є)
-5. Робить дамп PostgreSQL → parquet
-6. Запускає Streamlit
+**Інструменти розробки:**  ![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)
 
-Відкрийте **http://localhost:8501**
+-----
 
----
+# Що було зроблено в рамках проєкту
+* **У цьому проєкті я пройшов повний цикл розробки ML-продукту (End-to-End):**
+* **Парсинг даних: Написання скриптів для збору даних з AUTO.RIA через офіційний API.**
+* **EDA та очищення: Аналіз отриманих даних, обробка пропущених значень та видалення аномалій.**
+* **Розробка моделі: Тренування та тюнінг моделі градієнтного бустингу (CatBoost).**
+* **Створення API: Розробка бекенду на FastAPI для обробки запитів на прогноз ціни.**
+* **Розробка інтерфейсу: Створення інтерактивного UI на Streamlit для користувачів.**
+* **Контейнеризація: Налаштування Docker-образів та зв'язки сервісів через Docker Compose для легкого розгортання.**
 
-### Варіант Б — Покроково вручну
+-----
 
-#### 1. Клонування та налаштування
-```bash
-git clone https://github.com/YOUR_USERNAME/home-credit-default-risk.git
-cd home-credit-default-risk
+# Модель та метрики
 
-cp .env.example .env
-# За потреби відредагуйте .env (пароль, назва БД)
-```
+**Для прогнозування використовується алгоритм CatBoostRegressor**, навчений на логарифмі ціни (`log1p(Price_USD)`) з подальшим оберненим перетворенням (`expm1`) прогнозів у долари.
 
-#### 2. Підготовка директорій
-```bash
-mkdir -p models/plots data/parquet data/home-credit-default-risk docker/initdb
-```
+Якість оцінюється двома способами: **K-Fold Cross-Validation (K=5)** на тренувальній частині — дає стабільну оцінку та довірчий інтервал (± std), і **hold-out тест** (20% даних, які модель жодного разу не бачила під час тренування) — фінальна перевірка перед збереженням моделі.
 
-#### 3. Збірка та запуск контейнерів
-```bash
-docker compose up -d --build
-```
-> Запускає два сервіси: `db` (PostgreSQL 16) та `app` (Streamlit).
+### Метрики на hold-out тесті:
 
-#### 4. Перевірка підключення до БД
-```bash
-docker compose exec app python check_connection.py
-```
+| Метрика | Значення | Що означає |
+|---|---|---|
+| **MAE** (Mean Absolute Error) | 3 130.82 USD | Середня похибка прогнозу в доларах. Модель в середньому помиляється приблизно на цю суму. |
+| **MAPE** (Mean Absolute Percentage Error) | 20.97% | Та ж похибка, але у відсотках від реальної ціни — зручно порівнювати точність для дешевих і дорогих авто. |
+| **R²** (коефіцієнт детермінації) | 0.8525 | Частка варіації ціни, яку пояснює модель. |
+| **Median AE** (медіана абсолютної похибки) | 1 302.93 USD | Медіана абсолютної похибки. Значно нижча за MAE — це означає, що для "типового" авто модель помиляється набагато менше, а MAE "тягнуть" вгору окремі важкі випадки (рідкісні марки, нетипові ціни). |
 
-#### 5. Імпорт даних у PostgreSQL (один раз)
-```bash
-# Помістіть CSV з Kaggle у data/home-credit-default-risk/
-docker compose run --rm app python init_db.py
-```
+> MAE та Median AE навмисно наведені поруч: різниця між ними — хороший індикатор "хвоста" помилок. Якщо MAE суттєво більший за Median AE (як тут), це нормально для цінових даних із довгим правим хвостом (дорогі/рідкісні авто), а не ознака зламаної моделі.
 
-#### 6. Дамп PostgreSQL → parquet (один раз, ~5-15 хв)
-```bash
-docker compose run --rm app python dump_to_parquet.py
-```
-> Після цього Streamlit читає дані за ~10 секунд.
+### Проблеми та обмеження моделі:
+Під час розробки я зіткнувся з декількома критичними факторами, які вплинули на фінальну точність:
 
-#### 7. Тренування моделі
-```bash
-# Через CLI всередині контейнера:
-docker compose run --rm app python -m src.train
+* **Обсяг вибірки: Початковий датасет складав 20,000 оголошень, що є відносно невеликою кількістю для охоплення всього різноманіття авторинку.**
 
-# Або відкрийте ноутбук локально (поза Docker):
-jupyter notebook notebooks/model.ipynb
-```
+* **Якість даних: Близько 1,000 записів були втрачені через помилки в API або порожні значення в ключових полях.**
 
-#### 8. Відкрийте застосунок
-```
-http://localhost:8501
-```
+* **Викиди (Outliers): Через обмежену кількість даних, занадто старі автомобілі або авто з екстремально високими цінами створювали "шум". Для стабільності моделі дані довелось частково "урізати" по роках та цінових діапазонах.**
 
----
+* **Data leakage у CV (виправлено): групування рідкісних марок/моделей у категорію "Other" та межі IQR для видалення викидів спочатку рахувались один раз на всьому тренувальному наборі — до розбиття на K-Fold. Це означало, що ці пороги вже "бачили" дані валідаційного фолду ще до CV, і трохи завищували CV-метрики. Тепер обидва пороги рахуються окремо всередині кожного фолду, лише на його train-частині.**
 
-### Корисні команди Docker
+-----
 
-```bash
-# Переглянути логи застосунку
-docker compose logs -f app
+# Чого я навчився
+Цей проєкт став для мене великим практичним досвідом, де я:
 
-# Переглянути логи БД
-docker compose logs -f db
+* **Навчився працювати з реальними "брудними" даними (Data Cleaning) та проводити їх глибокий аналіз.**
+* **Опанував бібліотеку CatBoost та роботу з категоріальними ознаками без складної передобробки.**
+* **Зрозумів принципи побудови мікросервісної архітектури (Backend + Frontend + ML Model).**
+* **На практиці застосував Docker для ізоляції середовища розробки.**
+* **Навчився інтегрувати сторонні API та працювати з обмеженнями за запитами.**
 
-# Перезапустити лише застосунок
-docker compose restart app
+-----
 
-# Зупинити все
-docker compose down
+# Важливі зауваження для користувачів (Disclaimer)
+Проєкт відкритий для використання та вивчення, проте зверніть увагу на наступні моменти:
 
-# Зупинити та видалити дані БД (незворотно)
-docker compose down -v
+1) API Ключ: Власний API-ключ для AUTO.RIA я не надаю. Якщо ви хочете оновити дані або переписати парсер, вам потрібно отримати свій ключ на порталі для розробників.
+2) Датасет: Основний файл cars_dataset.csv відсутній у репозиторії. Оскільки дані були зібрані за допомогою платного доступу до API, я залишаю за собою право не розповсюджувати повний набір даних.
+3) Дані для тесту: У папці data/ ви знайдете cars_dataset_sample.csv. Це приклад структури. Для роботи оригінального парсеру або скриптів перетренування вам потрібно створити власний файл cars_dataset.csv.
+4) Конфігурація: Для самостійного доопрацювання проєкту вам необхідно створити файл .env у кореневій директорії та додати туди свій API-ключ.
 
-# Зайти всередину контейнера
-docker compose exec app bash
+-----
 
-# Перебудувати образ після зміни коду
-docker compose up -d --build app
-```
+# Як почати роботу
+Цей додаток повністю контейнеризований. Вам не потрібно встановлювати Python локально.
 
----
+1) Запустіть контейнери:
+  ```bash
+    docker network create auto_net
+    docker run -d --name backend --network auto_net -p 8080:8000 dmytrochuchman/auto-ria-backend
+    docker run -d --name frontend --network auto_net -p 8501:8501 dmytrochuchman/auto-ria-frontend
+  ```
 
-## Локальний запуск без Docker
+2) Відкрийте додаток: Перейдіть у браузері за адресою: http://localhost:8501
 
-### 1. Клонування та залежності
-```bash
-git clone https://github.com/YOUR_USERNAME/home-credit-default-risk.git
-cd home-credit-default-risk
-pip install -r requirements.txt
-```
+-----
+<img width="1425" height="824" alt="image" src="https://github.com/user-attachments/assets/1a8154a1-c5fd-451c-b481-70ededd6d50c" />
+<img width="1427" height="523" alt="image" src="https://github.com/user-attachments/assets/2ca11bf2-a433-4dee-93be-1a56dd57bec1" />
+<img width="1416" height="773" alt="image" src="https://github.com/user-attachments/assets/a39dc7e0-2bf1-4bae-85a1-970356bac2a5" />
+<img width="1414" height="671" alt="image" src="https://github.com/user-attachments/assets/dce3f561-5a2c-4c54-bf84-2bcdcec6e502" />
+<img width="1419" height="261" alt="image" src="https://github.com/user-attachments/assets/7c5fa504-e78c-4bb1-9d58-67379d13d0f6" />
 
-### 2. Налаштування `.env`
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=data default
-DB_USER=postgres
-DB_PASSWORD=your_password
-```
 
-### 3. Імпорт даних у PostgreSQL
-```bash
-python init_db.py
-```
 
-### 4. Дамп PostgreSQL → parquet
-```bash
-python dump_to_parquet.py
-```
-
-### 5. EDA
-```bash
-jupyter notebook notebooks/EDA.ipynb
-```
-
-### 6. Тренування моделі
-```bash
-# Через ноутбук (є всі графіки та SHAP):
-jupyter notebook notebooks/model.ipynb
-
-# Або через CLI:
-python -m src.train
-```
-
-### 7. Запуск Streamlit
-```bash
-streamlit run streamlit_app/app.py
-```
-
----
-
-## ML Pipeline
-
-```
-PostgreSQL (7 таблиць, ~56M рядків)
-         │
-         ▼  dump_to_parquet.py (1 раз)
-  data/parquet/*.parquet  (~800 MB)
-         │
-         ▼  features.py
-  Feature Engineering
-  ┌─────────────────────────────────────────┐
-  │  bureau           → 11 агрег. ознак     │
-  │  bureau_balance   →  4 ознаки           │
-  │  previous_app     → 11 ознак            │
-  │  pos_cash         →  8 ознак            │
-  │  installments     →  8 ознак            │
-  │  credit_card      → 10 ознак            │
-  │  application_train→ ~120 вихідних ознак │
-  └─────────────────────────────────────────┘
-         │  ~172 ознаки разом
-         ▼  preprocessing.py
-  sklearn Pipeline
-  ├─ SimpleImputer(strategy="median")
-  └─ OrdinalEncoder(handle_unknown="use_encoded_value")
-         │
-         ▼  train.py
-  LightGBM Classifier
-  ├─ n_estimators=1000, learning_rate=0.05
-  ├─ num_leaves=31, class_weight="balanced"
-  └─ subsample=0.8, colsample_bytree=0.8
-         │
-         ▼
-  5-fold StratifiedKFold CV
-         │
-         ▼
-  ROC-AUC ~0.76+
-```
-
-**Важливі рішення:**
-- `class_weight="balanced"` — обробка дисбалансу класів (~8% дефолту)
-- `OrdinalEncoder(handle_unknown="use_encoded_value")` — стійкість до нових категорій
-- `SimpleImputer(median)` — робастна імпутація пропусків
-- Оптимальний поріг рішення обирається за max F1 на val-сеті
-
----
-
-## Streamlit Dashboard
-
-**4 сторінки:**
-
-| Сторінка | Функціонал |
-|---------|-----------|
-| **Скоринг клієнта** | Форма введення → ймовірність дефолту, кредитний скор 300–850 (gauge), рекомендації |
-| **Аналіз портфеля** | Завантаження CSV → пакетний скоринг → pie chart ризиків, гістограми |
-| **Метрики моделі** | ROC-AUC, PR-крива, confusion matrix, feature importance, SHAP plots |
-| **Про проєкт** | Документація, архітектура, метадані моделі |
-
-**Ключова логіка скорингу:**
-- Введені користувачем дані → `build_input_row()` → вирівнювання під список ознак моделі
-- Відсутні колонки автоматично → `NaN` → імпутуються медіаною в pipeline
-- Кредитний скор: `300 + (1 − P(дефолту)) × 550`
-
----
-
-## Результати
-
-| Метрика | Значення |
-|---------|---------|
-| CV ROC-AUC (mean) | **~0.764** |
-| CV ROC-AUC (std)  | ±0.002 |
-| Test ROC-AUC | **~0.769** |
-| Оптимальний поріг | ~0.15–0.20 |
-
-**Топ ознаки (SHAP):**
-1. `ext_source_2` — зовнішній скоринг 2
-2. `ext_source_3` — зовнішній скоринг 3
-3. `ext_source_1` — зовнішній скоринг 1
-4. `days_birth` — вік клієнта
-5. `amt_credit` / `amt_goods_price` — сума кредиту
-6. `inst_avg_days_late` — середнє прострочення платежів
-7. `bureau_total_debt` — загальний борг у бюро
-
----
-
-## Стек
-
-```
-Python 3.11    pandas / numpy / pyarrow
-PostgreSQL 16  SQLAlchemy / pg8000
-LightGBM 4.3   scikit-learn / SHAP
-Streamlit 1.35 Plotly / Matplotlib / Seaborn
-Docker         Compose v2
-```
-
----
-
-## .gitignore
-
-```
-data/
-models/*.pkl
-models/*.csv
-models/plots/
-.env
-__pycache__/
-.venv/
-*.pyc
-```
-
----
+-----
 
 # Автор
 **Чучман Дмитро**
