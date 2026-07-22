@@ -28,7 +28,7 @@ from plotly.subplots import make_subplots
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="Home Credit Risk Scoring",
-    page_icon="🏦",
+    page_icon="HC",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -156,11 +156,11 @@ importance_df = load_feature_importance()
 # ─────────────────────────────────────────────
 def risk_label(prob: float):
     if prob < 0.3:
-        return "НИЗЬКИЙ", "badge-low", "🟢"
+        return "НИЗЬКИЙ", "badge-low"
     elif prob < 0.6:
-        return "СЕРЕДНІЙ", "badge-medium", "🟡"
+        return "СЕРЕДНІЙ", "badge-medium"
     else:
-        return "ВИСОКИЙ", "badge-high", "🔴"
+        return "ВИСОКИЙ", "badge-high"
 
 
 def get_credit_score(prob: float) -> int:
@@ -386,13 +386,13 @@ def predict_single(data: dict):
 #  Sidebar navigation
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("# 🏦 Credit Risk")
+    st.markdown("# Credit Risk")
     st.markdown("### Home Credit Default")
     st.markdown("---")
 
     page = st.radio(
         "Навігація",
-        ["🔮 Скоринг клієнта", "📊 Аналіз портфеля", "📈 Метрики моделі", "ℹ️ Про модель"],
+        ["Скоринг клієнта", "Аналіз портфеля", "Метрики моделі", "Про модель"],
         label_visibility="hidden",
     )
 
@@ -415,18 +415,18 @@ with st.sidebar:
 # ═══════════════════════════════════════════════
 # PAGE 1: Scoring
 # ═══════════════════════════════════════════════
-if page == "🔮 Скоринг клієнта":
-    st.markdown("## 🔮 Скоринг клієнта")
+if page == "Скоринг клієнта":
+    st.markdown("## Скоринг клієнта")
     st.markdown("Заповніть параметри клієнта для оцінки кредитного ризику")
 
     if pipeline is None:
-        st.error("❌ Модель не знайдена. Спочатку запустіть `notebooks/model.ipynb`")
+        st.error("Модель не знайдена. Спочатку запустіть `notebooks/model.ipynb`")
         st.stop()
 
     # ── Input form ──
     with st.form("scoring_form"):
         # Personal
-        st.markdown('<div class="section-header">👤 Персональні дані</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Персональні дані</div>', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         age     = c1.number_input("Вік", 18, 75, 35)
         gender  = c2.selectbox("Стать", ["M", "F"])
@@ -439,7 +439,7 @@ if page == "🔮 Скоринг клієнта":
         own_realty = c2.checkbox("Має нерухомість", value=True)
 
         # Employment
-        st.markdown('<div class="section-header">💼 Зайнятість</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Зайнятість</div>', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         income_type   = c1.selectbox("Тип доходу", [
             "Working", "Commercial associate", "Pensioner",
@@ -456,7 +456,7 @@ if page == "🔮 Скоринг клієнта":
         years_employed = c4.number_input("Стаж роботи (рр)", 0, 50, 5)
 
         # Financial
-        st.markdown('<div class="section-header">💰 Фінансові показники</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Фінансові показники</div>', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         income    = c1.number_input("Дохід (грн)", 10000, 5000000, 100000, step=10000)
         credit    = c2.number_input("Сума кредиту (грн)", 10000, 5000000, 200000, step=10000)
@@ -464,7 +464,7 @@ if page == "🔮 Скоринг клієнта":
         goods     = c4.number_input("Вартість товару (грн)", 0, 5000000, 180000, step=10000)
 
         # External scores
-        st.markdown('<div class="section-header">🏛️ Зовнішній скоринг</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Зовнішній скоринг</div>', unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
         ext1 = c1.slider("EXT_SOURCE_1", 0.0, 1.0, 0.5, 0.01,
                           help="Зовнішній скор 1 (вищий = краще)")
@@ -474,7 +474,7 @@ if page == "🔮 Скоринг клієнта":
                           help="Зовнішній скор 3")
 
         # Payment history
-        st.markdown('<div class="section-header">📋 Кредитна історія</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Кредитна історія</div>', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         prev_apps    = c1.number_input("Попередніх заявок", 0, 50, 2)
         prev_approved= c2.number_input("Схвалено", 0, 50, 1)
@@ -482,7 +482,7 @@ if page == "🔮 Скоринг клієнта":
         late_count   = c4.number_input("К-сть прострочених платежів", 0, 100, 0)
 
         submitted = st.form_submit_button(
-            "🎯 Розрахувати скор", use_container_width=True, type="primary"
+            "Розрахувати скор", use_container_width=True, type="primary"
         )
 
     if submitted:
@@ -505,13 +505,13 @@ if page == "🔮 Скоринг клієнта":
             st.error(f"Помилка передбачення: {e}")
             st.stop()
 
-        label, badge_class, emoji = risk_label(prob)
+        label, badge_class = risk_label(prob)
         score = get_credit_score(prob)
         threshold = metadata.get("optimal_threshold", 0.5)
-        decision = "✅ СХВАЛИТИ" if prob < threshold else "❌ ВІДХИЛИТИ"
+        decision = "СХВАЛИТИ" if prob < threshold else "ВІДХИЛИТИ"
 
         st.markdown("---")
-        st.markdown("### 📊 Результат оцінки")
+        st.markdown("### Результат оцінки")
 
         # Metrics row
         m1, m2, m3, m4 = st.columns(4)
@@ -532,7 +532,7 @@ if page == "🔮 Скоринг клієнта":
         m3.markdown(f"""
         <div class="metric-card">
           <div class="label">Рівень ризику</div>
-          <div class="value {'risk-low' if label=='НИЗЬКИЙ' else 'risk-medium' if label=='СЕРЕДНІЙ' else 'risk-high'}">{emoji} {label}</div>
+          <div class="value {'risk-low' if label=='НИЗЬКИЙ' else 'risk-medium' if label=='СЕРЕДНІЙ' else 'risk-high'}">{label}</div>
           <div class="sub">&nbsp;</div>
         </div>""", unsafe_allow_html=True)
 
@@ -568,42 +568,42 @@ if page == "🔮 Скоринг клієнта":
 
             for name, (val, threshold_val, direction) in ratio_data.items():
                 good = val <= threshold_val if direction == "lower" else val >= threshold_val
-                icon = "🟢" if good else "🔴"
-                st.markdown(f"{icon} **{name}:** `{val:.3f}`")
+                marker = "[OK]" if good else "[!]"
+                st.markdown(f"{marker} **{name}:** `{val:.3f}`")
 
         # Recommendations
         st.markdown("---")
-        st.markdown("### 💡 Рекомендації")
+        st.markdown("### Рекомендації")
 
         recs = []
         if prob >= threshold:
             if ext1 < 0.4 or ext2 < 0.4 or ext3 < 0.4:
-                recs.append(("⚠️", "Низький зовнішній скоринг. Запросити додаткові документи."))
+                recs.append("Низький зовнішній скоринг. Запросити додаткові документи.")
             if credit / (income + 1) > 3:
-                recs.append(("⚠️", "Високе боргове навантаження (кредит > 3× дохід)."))
+                recs.append("Високе боргове навантаження (кредит > 3× дохід).")
             if late_count > 5:
-                recs.append(("❌", "Значна кількість прострочених платежів."))
+                recs.append("Значна кількість прострочених платежів.")
             if age < 27:
-                recs.append(("ℹ️", "Молодий вік — підвищений ризик."))
-            recs.append(("🔍", "Розглянути вимогу поручителя або застави."))
+                recs.append("Молодий вік — підвищений ризик.")
+            recs.append("Розглянути вимогу поручителя або застави.")
         else:
-            recs.append(("✅", "Профіль клієнта відповідає критеріям схвалення."))
+            recs.append("Профіль клієнта відповідає критеріям схвалення.")
             if prob < 0.15:
-                recs.append(("💎", "Відмінний профіль — розглянути VIP умови."))
-            recs.append(("📋", "Стандартна перевірка документів."))
+                recs.append("Відмінний профіль — розглянути VIP умови.")
+            recs.append("Стандартна перевірка документів.")
 
-        for icon, text in recs:
-            st.markdown(f"- {icon} {text}")
+        for text in recs:
+            st.markdown(f"- {text}")
 
 
 # ═══════════════════════════════════════════════
 # PAGE 2: Portfolio Analysis
 # ═══════════════════════════════════════════════
-elif page == "📊 Аналіз портфеля":
-    st.markdown("## 📊 Аналіз кредитного портфеля")
+elif page == "Аналіз портфеля":
+    st.markdown("## Аналіз кредитного портфеля")
 
     if pipeline is None:
-        st.error("❌ Модель не знайдена.")
+        st.error("Модель не знайдена.")
         st.stop()
 
     st.info("Завантажте CSV файл з клієнтами для пакетного скорингу")
@@ -619,7 +619,7 @@ elif page == "📊 Аналіз портфеля":
             df_upload = pd.read_csv(uploaded_file)
             df_upload.columns = [c.lower() for c in df_upload.columns]
 
-        st.success(f"✅ Завантажено: {df_upload.shape[0]:,} клієнтів")
+        st.success(f"Завантажено: {df_upload.shape[0]:,} клієнтів")
 
         has_target = "target" in df_upload.columns
 
@@ -655,7 +655,7 @@ elif page == "📊 Аналіз портфеля":
         df_results["credit_score"] = df_results["probability"].apply(get_credit_score)
 
         # KPIs
-        st.markdown("### 📊 Ключові показники портфеля")
+        st.markdown("### Ключові показники портфеля")
         k1, k2, k3, k4, k5 = st.columns(5)
         k1.metric("Всього клієнтів", f"{len(df_results):,}")
         k2.metric("Схвалити", f"{(df_results['decision']=='Схвалити').sum():,}",
@@ -708,7 +708,7 @@ elif page == "📊 Аналіз портфеля":
         # Download results
         csv_out = df_results[["probability", "risk_level", "decision", "credit_score"]].to_csv(index=False)
         st.download_button(
-            "⬇️ Завантажити результати CSV",
+            "Завантажити результати CSV",
             data=csv_out,
             file_name="scoring_results.csv",
             mime="text/csv",
@@ -718,15 +718,15 @@ elif page == "📊 Аналіз портфеля":
 # ═══════════════════════════════════════════════
 # PAGE 3: Model Metrics
 # ═══════════════════════════════════════════════
-elif page == "📈 Метрики моделі":
-    st.markdown("## 📈 Метрики та аналіз моделі")
+elif page == "Метрики моделі":
+    st.markdown("## Метрики та аналіз моделі")
 
     plots_dir = os.path.join(
         os.path.dirname(os.path.dirname(__file__)), "models", "plots"
     )
 
     if metadata:
-        st.markdown("### 🏆 Результати Cross-Validation")
+        st.markdown("### Результати Cross-Validation")
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("CV ROC-AUC (mean)", f"{metadata.get('cv_auc_mean', 0):.4f}")
         m2.metric("CV ROC-AUC (std)", f"±{metadata.get('cv_auc_std', 0):.4f}")
@@ -754,11 +754,11 @@ elif page == "📈 Метрики моделі":
                 st.image(fpath, use_column_width=True)
                 st.markdown("---")
     else:
-        st.info("📭 Графіки не знайдено. Запустіть `notebooks/model.ipynb` для генерації.")
+        st.info("Графіки не знайдено. Запустіть `notebooks/model.ipynb` для генерації.")
 
     # Feature importance table
     if not importance_df.empty:
-        st.markdown("### 📋 Таблиця важливості ознак")
+        st.markdown("### Таблиця важливості ознак")
         n_show = st.slider("Показати топ N ознак", 10, len(importance_df), 30)
         st.dataframe(
             importance_df.head(n_show).style.background_gradient(
@@ -772,14 +772,14 @@ elif page == "📈 Метрики моделі":
 # ═══════════════════════════════════════════════
 # PAGE 4: About
 # ═══════════════════════════════════════════════
-elif page == "ℹ️ Про модель":
-    st.markdown("## ℹ️ Про модель та проєкт")
+elif page == "Про модель":
+    st.markdown("## Про модель та проєкт")
 
     col1, col2 = st.columns([1, 1])
 
     with col1:
         st.markdown("""
-### 🏦 Home Credit Default Risk
+### Home Credit Default Risk
 
 Система кредитного скорингу для оцінки ймовірності дефолту
 клієнтів Home Credit Group.
@@ -790,7 +790,7 @@ elif page == "ℹ️ Про модель":
 
 ---
 
-### 📊 Дані
+### Дані
 
 | Таблиця | Опис |
 |---------|------|
@@ -804,7 +804,7 @@ elif page == "ℹ️ Про модель":
 
 ---
 
-### 🤖 Модель
+### Модель
 
 **LightGBM Classifier**
 - Gradient Boosting на деревах рішень
@@ -815,7 +815,7 @@ elif page == "ℹ️ Про модель":
 
     with col2:
         st.markdown("""
-### 🔧 Архітектура Pipeline
+### Архітектура Pipeline
 
 ```
 PostgreSQL DB
@@ -845,7 +845,7 @@ ROC-AUC ~0.76+
 
 ---
 
-### 📦 Стек технологій
+### Стек технологій
 
 - **Database:** PostgreSQL + SQLAlchemy + pg8000
 - **ML:** LightGBM, scikit-learn
@@ -855,7 +855,7 @@ ROC-AUC ~0.76+
 
 ---
 
-### 🚀 Запуск
+### Запуск
 
 ```bash
 # 1. Ініціалізація БД
@@ -871,5 +871,5 @@ streamlit run streamlit_app/app.py
 
     if metadata:
         st.markdown("---")
-        st.markdown("### 📊 Метадані моделі")
+        st.markdown("### Метадані моделі")
         st.json(metadata)
