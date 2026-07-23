@@ -1,6 +1,7 @@
 # Home Credit Default Risk
 ---
-<img width="3539" height="1566" alt="image" src="https://github.com/user-attachments/assets/f7b6d39e-746c-4d95-849f-4b56789c0fb8" />
+
+<img width="2497" height="1117" alt="Знімок екрана 2026-07-22 123909" src="https://github.com/user-attachments/assets/d035c9f1-d908-4ba3-b33f-9d7c974e7083" />
 
 ---
 
