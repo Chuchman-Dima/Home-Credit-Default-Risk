@@ -1,9 +1,4 @@
 # Home Credit Default Risk
----
-
-<img width="2497" height="1117" alt="Знімок екрана 2026-07-22 123909" src="https://github.com/user-attachments/assets/d035c9f1-d908-4ba3-b33f-9d7c974e7083" />
-
----
 
 > Система кредитного скорингу на основі **LightGBM** з повним ML-циклом:
 > EDA → Feature Engineering → Training → Streamlit Deploy.
@@ -20,10 +15,7 @@
 ## Зміст
 - [Про проєкт](#про-проєкт)
 - [Структура](#структура)
-- [Швидкий старт через Docker](#-швидкий-старт-через-docker) ← **рекомендовано**
-- [Локальний запуск без Docker](#локальний-запуск-без-docker)
 - [ML Pipeline](#ml-pipeline)
-- [Streamlit Dashboard](#streamlit-dashboard)
 - [Результати](#результати)
 
 ---
@@ -92,173 +84,6 @@ Home-Credit-Default-Risk/
 └── .env                            # DB credentials (не в git)
 ```
 
----
-
-## Швидкий старт через Docker
-
-### Вимоги
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows / macOS) або Docker Engine + Compose (Linux)
-- CSV файли з Kaggle у папці `data/home-credit-default-risk/` ([посилання](https://www.kaggle.com/datasets/megancrenshaw/home-credit-default-risk))
-- Натренована модель у папці `models/` (або перетренувати — крок 5 нижче)
-
----
-
-### Варіант А — Автоматичний скрипт (рекомендовано)
-
-**Linux / macOS:**
-```bash
-chmod +x docker_setup.sh
-./docker_setup.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\docker_setup.ps1
-```
-
-Скрипт автоматично:
-1. Створює `.env` з шаблону
-2. Збирає Docker образ
-3. Запускає PostgreSQL
-4. Імпортує CSV → PostgreSQL (якщо файли є)
-5. Робить дамп PostgreSQL → parquet
-6. Запускає Streamlit
-
-Відкрийте **http://localhost:8501**
-
----
-
-### Варіант Б — Покроково вручну
-
-#### 1. Клонування та налаштування
-```bash
-git clone https://github.com/YOUR_USERNAME/home-credit-default-risk.git
-cd home-credit-default-risk
-
-cp .env.example .env
-# За потреби відредагуйте .env (пароль, назва БД)
-```
-
-#### 2. Підготовка директорій
-```bash
-mkdir -p models/plots data/parquet data/home-credit-default-risk docker/initdb
-```
-
-#### 3. Збірка та запуск контейнерів
-```bash
-docker compose up -d --build
-```
-> Запускає два сервіси: `db` (PostgreSQL 16) та `app` (Streamlit).
-
-#### 4. Перевірка підключення до БД
-```bash
-docker compose exec app python check_connection.py
-```
-
-#### 5. Імпорт даних у PostgreSQL (один раз)
-```bash
-# Помістіть CSV з Kaggle у data/home-credit-default-risk/
-docker compose run --rm app python init_db.py
-```
-
-#### 6. Дамп PostgreSQL → parquet (один раз, ~5-15 хв)
-```bash
-docker compose run --rm app python dump_to_parquet.py
-```
-> Після цього Streamlit читає дані за ~10 секунд.
-
-#### 7. Тренування моделі
-```bash
-# Через CLI всередині контейнера:
-docker compose run --rm app python -m src.train
-
-# Або відкрийте ноутбук локально (поза Docker):
-jupyter notebook notebooks/model.ipynb
-```
-
-#### 8. Відкрийте застосунок
-```
-http://localhost:8501
-```
-
----
-
-### Корисні команди Docker
-
-```bash
-# Переглянути логи застосунку
-docker compose logs -f app
-
-# Переглянути логи БД
-docker compose logs -f db
-
-# Перезапустити лише застосунок
-docker compose restart app
-
-# Зупинити все
-docker compose down
-
-# Зупинити та видалити дані БД (незворотно)
-docker compose down -v
-
-# Зайти всередину контейнера
-docker compose exec app bash
-
-# Перебудувати образ після зміни коду
-docker compose up -d --build app
-```
-
----
-
-## Локальний запуск без Docker
-
-### 1. Клонування та залежності
-```bash
-git clone https://github.com/YOUR_USERNAME/home-credit-default-risk.git
-cd home-credit-default-risk
-pip install -r requirements.txt
-```
-
-### 2. Налаштування `.env`
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=data default
-DB_USER=postgres
-DB_PASSWORD=your_password
-```
-
-### 3. Імпорт даних у PostgreSQL
-```bash
-python init_db.py
-```
-
-### 4. Дамп PostgreSQL → parquet
-```bash
-python dump_to_parquet.py
-```
-
-### 5. EDA
-```bash
-jupyter notebook notebooks/EDA.ipynb
-```
-
-### 6. Тренування моделі
-```bash
-# Через ноутбук (є всі графіки та SHAP):
-jupyter notebook notebooks/model.ipynb
-
-# Або через CLI:
-python -m src.train
-```
-
-### 7. Запуск Streamlit
-```bash
-streamlit run streamlit_app/app.py
-```
-
----
-
 ## ML Pipeline
 
 ```
@@ -303,26 +128,6 @@ PostgreSQL (7 таблиць, ~56M рядків)
 - `SimpleImputer(median)` — робастна імпутація пропусків
 - Оптимальний поріг рішення обирається за max F1 на val-сеті
 
----
-
-## Streamlit Dashboard
-
-**4 сторінки:**
-
-| Сторінка | Функціонал |
-|---------|-----------|
-| **Скоринг клієнта** | Форма введення → ймовірність дефолту, кредитний скор 300–850 (gauge), рекомендації |
-| **Аналіз портфеля** | Завантаження CSV → пакетний скоринг → pie chart ризиків, гістограми |
-| **Метрики моделі** | ROC-AUC, PR-крива, confusion matrix, feature importance, SHAP plots |
-| **Про проєкт** | Документація, архітектура, метадані моделі |
-
-**Ключова логіка скорингу:**
-- Введені користувачем дані → `build_input_row()` → вирівнювання під список ознак моделі
-- Відсутні колонки автоматично → `NaN` → імпутуються медіаною в pipeline
-- Кредитний скор: `300 + (1 − P(дефолту)) × 550`
-
----
-
 ## Результати
 
 | Метрика | Значення |
@@ -349,8 +154,6 @@ PostgreSQL (7 таблиць, ~56M рядків)
 Python 3.11    pandas / numpy / pyarrow
 PostgreSQL 16  SQLAlchemy / pg8000
 LightGBM 4.3   scikit-learn / SHAP
-Streamlit 1.35 Plotly / Matplotlib / Seaborn
-Docker         Compose v2
 ```
 
 ---
