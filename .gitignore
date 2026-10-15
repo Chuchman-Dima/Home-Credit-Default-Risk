@@ -1,41 +1,32 @@
-# Дані (великі файли — не зберігаємо в git)
-data/home-credit-default-risk/
+# Дані
+data/raw/
 data/parquet/
+data/processed/
 
-# Модель (великий бінарний файл)
-models/*.pkl
-models/feature_importance.csv
-models/model_metadata.json
-models/plots/
+# Артефакти моделі
+artifacts/models/*.pkl
+artifacts/models/*.csv
+artifacts/models/*.json
 
-# Налаштування (секрети)
+# Секрети (якщо лишилися зі старої версії)
 .env
 
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
 *.egg-info/
 dist/
 build/
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb_checkpoints
 
 # Середовища
 .venv/
 venv/
-env/
-.virtualenv/
 
-# IDE
+# IDE / OS
 .idea/
 .vscode/
-*.iml
-
-# OS
 .DS_Store
-Thumbs.
+Thumbs.db
